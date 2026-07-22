@@ -1,0 +1,66 @@
+{
+  "use_case": "Predict student exam score from study and support factors",
+  "target": "Exam_Score",
+  "dropped_columns": [
+    "Sleep_Hours",
+    "Physical_Activity",
+    "Gender",
+    "School_Type"
+  ],
+  "numeric_features": [
+    "Hours_Studied",
+    "Attendance",
+    "Previous_Scores",
+    "Tutoring_Sessions"
+  ],
+  "ordinal_features": [
+    "Parental_Involvement",
+    "Access_to_Resources",
+    "Motivation_Level",
+    "Family_Income",
+    "Teacher_Quality",
+    "Peer_Influence",
+    "Parental_Education_Level",
+    "Distance_from_Home"
+  ],
+  "binary_features": [
+    "Extracurricular_Activities",
+    "Internet_Access",
+    "Learning_Disabilities"
+  ],
+  "comparison_results": [
+    {
+      "model": "Ridge Regression",
+      "MSE": 3.2681298619082995,
+      "RMSE": 1.8077969636848878,
+      "MAE": 0.4932394858252953,
+      "R2": 0.7687928471440102
+    },
+    {
+      "model": "Gradient Descent (custom)",
+      "MSE": 3.2681643656402435,
+      "RMSE": 1.8078065066926392,
+      "MAE": 0.49323332855780117,
+      "R2": 0.7687904061425926
+    },
+    {
+      "model": "OLS LinearRegression",
+      "MSE": 3.2681643656402497,
+      "RMSE": 1.807806506692641,
+      "MAE": 0.49323332855782237,
+      "R2": 0.7687904061425922
+    },
+    {
+      "model": "Stochastic LR (SGDRegressor)",
+      "MSE": 3.296348250778842,
+      "RMSE": 1.8155848233499976,
+      "MAE": 0.49121606025174325,
+      "R2": 0.7667965086799285
+    }
+  ],
+  "best_model_name": "Ridge Regression",
+  "notebook_best_model": "Ridge Regression",
+  "test_rmse": 1.8077969636848876,
+  "test_r2": 0.7687928471440102,
+  "test_mae": 0.4932394858252955
+}
