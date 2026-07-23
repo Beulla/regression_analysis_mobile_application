@@ -1,10 +1,4 @@
-"""
-Task 2 helper: load the best saved model and predict a student's exam score.
-
-Usage examples:
-  python prediction.py
-  python prediction.py --hours 22 --attendance 90 --previous 80
-"""
+"""Predict student exam score with the saved Task-1 model."""
 
 from __future__ import annotations
 
@@ -19,7 +13,6 @@ ARTIFACTS_DIR = Path(__file__).resolve().parents[1] / "linear_regression" / "mod
 PIPELINE_PATH = ARTIFACTS_DIR / "best_model_pipeline.joblib"
 META_PATH = ARTIFACTS_DIR / "model_metadata.json"
 
-# Defaults mirror a typical mid-performing student in the dataset.
 DEFAULT_INPUT = {
     "Hours_Studied": 20,
     "Attendance": 80,

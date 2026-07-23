@@ -31,10 +31,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 
-# ---------------------------------------------------------------------------
-# Paths & feature schema (aligned with Task 1 notebook)
-# ---------------------------------------------------------------------------
-
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS_DIR = ROOT / "summative" / "linear_regression" / "models"
 DATA_PATH = ROOT / "summative" / "data" / "StudentPerformanceFactors.csv"
@@ -69,15 +65,9 @@ BINARY_FEATURES = [
 
 FEATURE_COLUMNS = NUMERIC_FEATURES + list(ORDINAL_MAPS.keys()) + BINARY_FEATURES
 
-# Thread lock so concurrent retrain / predict don't race on the shared pipeline.
 _model_lock = threading.Lock()
 _pipeline: Optional[Pipeline] = None
 _metadata: dict = {}
-
-
-# ---------------------------------------------------------------------------
-# Enums for categorical inputs
-# ---------------------------------------------------------------------------
 
 
 class LowMedHigh(str, Enum):
@@ -109,11 +99,6 @@ class YesNo(str, Enum):
     no = "No"
 
 
-# ---------------------------------------------------------------------------
-# Pydantic models — types + realistic ranges from the training dataset
-# ---------------------------------------------------------------------------
-
-
 class StudentFeatures(BaseModel):
     """Input features required by the linear regression pipeline."""
 
@@ -139,7 +124,6 @@ class StudentFeatures(BaseModel):
         }
     )
 
-    # Numeric — ranges mirror observed data with a small buffer for realistic new inputs
     Hours_Studied: Annotated[float, Field(ge=0, le=60, description="Weekly study hours (0–60)")]
     Attendance: Annotated[float, Field(ge=0, le=100, description="Class attendance percentage (0–100)")]
     Previous_Scores: Annotated[float, Field(ge=0, le=100, description="Prior exam score (0–100)")]
@@ -147,7 +131,6 @@ class StudentFeatures(BaseModel):
         int, Field(ge=0, le=20, description="Number of tutoring sessions (0–20)")
     ]
 
-    # Ordinal categoricals
     Parental_Involvement: LowMedHigh
     Access_to_Resources: LowMedHigh
     Motivation_Level: LowMedHigh
@@ -157,7 +140,6 @@ class StudentFeatures(BaseModel):
     Parental_Education_Level: ParentalEducation
     Distance_from_Home: DistanceFromHome
 
-    # Binary categoricals
     Extracurricular_Activities: YesNo
     Internet_Access: YesNo
     Learning_Disabilities: YesNo
@@ -195,11 +177,6 @@ class RetrainResponse(BaseModel):
     test_r2: float
     model_path: str
     retrained_at: str
-
-
-# ---------------------------------------------------------------------------
-# Model load / save helpers
-# ---------------------------------------------------------------------------
 
 
 def _load_pipeline() -> tuple[Pipeline, dict]:
@@ -360,10 +337,6 @@ def retrain_model(new_df: pd.DataFrame, append_to_existing: bool = True) -> Retr
     )
 
 
-# ---------------------------------------------------------------------------
-# FastAPI app + CORS
-# ---------------------------------------------------------------------------
-
 app = FastAPI(
     title="Student Exam Score Predictor",
     description=(
@@ -373,15 +346,8 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS rationale:
-# - ALLOWED: localhost origins for local frontend/Swagger testing, and a wildcard-free
-#   allowlist so browsers on those origins can call the API. Methods limited to what
-#   the API actually uses (GET/POST/OPTIONS). Headers limited to Content-Type /
-#   Authorization so clients can send JSON and (later) auth tokens.
-# - RESTRICTED: arbitrary third-party websites are NOT allowed (no allow_origins=["*"]
-#   with credentials). This reduces CSRF/data-exfiltration risk if a browser session
-#   ever carries cookies/tokens. Unknown methods (TRACE, etc.) and custom headers
-#   outside the allowlist are blocked by the browser.
+# CORS: allow local frontend/Swagger origins only; restrict methods to GET/POST/OPTIONS
+# and headers to Content-Type/Authorization. No wildcard origins with credentials.
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
@@ -405,7 +371,6 @@ def startup_load_model() -> None:
     try:
         refresh_pipeline()
     except FileNotFoundError as exc:
-        # Allow the process to start; /predict will return 503 until artifacts exist.
         print(f"Warning: {exc}")
 
 
@@ -428,11 +393,7 @@ def health():
 
 @app.post("/predict", response_model=PredictionResponse, tags=["prediction"])
 def predict(features: StudentFeatures):
-    """
-    Predict exam score from student study/support factors.
-
-    All fields are validated for type and realistic ranges via Pydantic.
-    """
+    """Predict exam score from student study/support factors."""
     try:
         pipeline = get_pipeline()
     except FileNotFoundError as exc:
@@ -453,12 +414,7 @@ def predict(features: StudentFeatures):
 
 @app.post("/retrain", response_model=RetrainResponse, tags=["retraining"])
 def retrain(body: RetrainRequest):
-    """
-    Retrain the Ridge pipeline using newly uploaded/streamed labelled samples.
-
-    By default, new rows are appended to the original dataset so the model keeps
-    historical signal; set `append_to_existing=false` to train only on the new batch.
-    """
+    """Retrain the Ridge pipeline using newly uploaded/streamed labelled samples."""
     rows = [sample.model_dump() for sample in body.samples]
     new_df = pd.DataFrame(rows)
     return retrain_model(new_df, append_to_existing=body.append_to_existing)
@@ -476,7 +432,7 @@ async def retrain_csv(
     raw = await file.read()
     try:
         new_df = pd.read_csv(io.BytesIO(raw))
-    except Exception as exc:  # noqa: BLE001 — surface parse errors to the client
+    except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Could not parse CSV: {exc}") from exc
 
     return retrain_model(new_df, append_to_existing=append_to_existing)
