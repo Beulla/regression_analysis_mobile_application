@@ -4,3 +4,21 @@ __pycache__/
 .env
 *.egg-info/
 .ipynb_checkpoints/
+
+# Flutter
+**/flutterApp/.dart_tool/
+**/flutterApp/.flutter-plugins
+**/flutterApp/.flutter-plugins-dependencies
+**/flutterApp/.packages
+**/flutterApp/.pub-cache/
+**/flutterApp/.pub/
+**/flutterApp/build/
+**/flutterApp/.idea/
+**/flutterApp/*.iml
+**/flutterApp/android/.gradle/
+**/flutterApp/android/local.properties
+**/flutterApp/ios/Pods/
+**/flutterApp/ios/.symlinks/
+**/flutterApp/macos/Flutter/ephemeral/
+**/flutterApp/linux/flutter/ephemeral/
+**/flutterApp/windows/flutter/ephemeral/
