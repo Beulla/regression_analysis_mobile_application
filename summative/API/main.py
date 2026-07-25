@@ -346,12 +346,30 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# CORS is restricted deliberately: named origins only (no wildcard), only the verbs the
+# app actually uses, and only the headers it actually sends. Flutter web must be served
+# on one of these ports (flutter run -d chrome --web-port=5000); native Android/iOS
+# builds are unaffected because they do not send an Origin header.
+ALLOWED_ORIGINS = [
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://regression-analysis-mobile-application-vs8p.onrender.com",
+]
+
+ALLOWED_METHODS = ["GET", "POST", "OPTIONS"]
+ALLOWED_HEADERS = ["Accept", "Authorization", "Content-Type"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
+    max_age=600,
 )
 
 
