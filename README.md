@@ -67,6 +67,7 @@ summative/
 
 - **Base URL:** https://regression-analysis-mobile-application-vs8p.onrender.com
 - **Swagger UI:** https://regression-analysis-mobile-application-vs8p.onrender.com/docs
+- **Youtube video:**https://youtu.be/suXja6yLZ64
 - **Prediction endpoint:** `POST /predict`
 
 Example:
